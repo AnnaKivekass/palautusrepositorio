@@ -28,10 +28,12 @@ class StatisticsService:
 
     def top(self, n: int, sort_by: str = "points") -> List[Player]:
         keymap: dict[str, Callable[[Player], int]] = {
-            "points":  self._points_value,
-            "goals":   lambda p: int(getattr(p, "goals", 0)),
+            "points": self._points_value,
+            "goals": lambda p: int(getattr(p, "goals", 0)),
             "assists": lambda p: int(getattr(p, "assists", 0)),
         }
         sort_key = sort_by.lower()
+        if sort_key not in keymap:
+            raise ValueError(f"Unknown sort_by '{sort_by}'")
         key = keymap[sort_key]
         return sorted(self._players, key=key, reverse=True)[:n]
