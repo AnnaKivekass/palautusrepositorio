@@ -1,4 +1,8 @@
+"""Player-tietoluokka."""
+
 class Player:
+    """Pelaajan olennaiset kentät ja johdetut pisteet."""
+
     def __init__(self, name: str, team: str, goals: int, assists: int, nationality: str):
         self.name = name
         self.team = team
@@ -7,8 +11,6 @@ class Player:
         self.nationality = nationality
 
     @property
-    def points(self):
+    def points(self) -> int:
+        """Palauta pisteet = maalit + syötöt."""
         return self.goals + self.assists
-
-    def __str__(self):
-        return f"{self.name:20} {self.team:5} {self.goals:2} + {self.assists:2} = {self.points:3}"

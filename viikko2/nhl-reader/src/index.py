@@ -1,11 +1,16 @@
+"""NHL-reader: hakee pelaajat ja näyttää Rich-taulukkona."""
+
 import re
-from player_reader import PlayerReader
-from player_stats import PlayerStats
+
 from rich.console import Console
 from rich.table import Table
 
+from player_reader import PlayerReader
+from player_stats import PlayerStats
+
 
 def show_players(players, nationality, season):
+    """Tulosta valitun maan pelaajat taulukkona."""
     console = Console()
     if not players:
         console.print(f"[bold red]No players found for {nationality} in {season}[/bold red]")
@@ -25,25 +30,24 @@ def show_players(players, nationality, season):
 
 
 def normalize_season(s: str) -> str:
+    """Hyväksyy 'YYYY' tai 'YYYY-YY' ja palauttaa 'YYYY-YY'."""
     s = s.strip()
     if re.fullmatch(r"\d{4}", s):
         y = int(s)
-        return f"{y}-{str((y+1) % 100).zfill(2)}"
+        return f"{y}-{str((y + 1) % 100).zfill(2)}"
     if re.fullmatch(r"\d{4}-\d{2}", s):
         return s
     raise ValueError("Season must be in format YYYY or YYYY-YY")
 
 
 def main():
+    """Lue syötteet, hae data ja näytä tulos (≤10 statements)."""
     season_input = input("Enter season (e.g. 2024-25): ").strip()
     season = normalize_season(season_input)
     nationality = input("Enter nationality (e.g. FIN, SWE, USA): ").strip().upper()
-
     url = f"https://studies.cs.helsinki.fi/nhlstats/{season}/players"
-    reader = PlayerReader(url)
-    stats = PlayerStats(reader)
+    stats = PlayerStats(PlayerReader(url))
     players = stats.top_scorers_by_nationality(nationality)
-
     show_players(players, nationality, season)
 
 
