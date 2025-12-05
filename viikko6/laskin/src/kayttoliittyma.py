@@ -1,18 +1,23 @@
 from enum import Enum
 from tkinter import ttk, constants, StringVar
 
+
 class Komento(Enum):
     SUMMA = 1
     EROTUS = 2
     NOLLAUS = 3
     KUMOA = 4
 
+
 class Summa:
     def __init__(self, sovelluslogiikka, lue_syote):
         self._sovelluslogiikka = sovelluslogiikka
         self._lue_syote = lue_syote
+        self._edellinen_arvo = None
 
     def suorita(self):
+        self._edellinen_arvo = self._sovelluslogiikka.arvo()
+
         try:
             arvo = int(self._lue_syote())
         except Exception:
@@ -20,12 +25,20 @@ class Summa:
 
         self._sovelluslogiikka.plus(arvo)
 
+    def kumoa(self):
+        if self._edellinen_arvo is not None:
+            self._sovelluslogiikka.aseta_arvo(self._edellinen_arvo)
+
+
 class Erotus:
     def __init__(self, sovelluslogiikka, lue_syote):
         self._sovelluslogiikka = sovelluslogiikka
         self._lue_syote = lue_syote
+        self._edellinen_arvo = None
 
     def suorita(self):
+        self._edellinen_arvo = self._sovelluslogiikka.arvo()
+
         try:
             arvo = int(self._lue_syote())
         except Exception:
@@ -33,13 +46,24 @@ class Erotus:
 
         self._sovelluslogiikka.miinus(arvo)
 
+    def kumoa(self):
+        if self._edellinen_arvo is not None:
+            self._sovelluslogiikka.aseta_arvo(self._edellinen_arvo)
+
+
 class Nollaus:
     def __init__(self, sovelluslogiikka, lue_syote):
         self._sovelluslogiikka = sovelluslogiikka
         self._lue_syote = lue_syote
+        self._edellinen_arvo = None
 
     def suorita(self):
+        self._edellinen_arvo = self._sovelluslogiikka.arvo()
         self._sovelluslogiikka.nollaa()
+
+    def kumoa(self):
+        if self._edellinen_arvo is not None:
+            self._sovelluslogiikka.aseta_arvo(self._edellinen_arvo)
 
 
 class Kumoa:
@@ -50,12 +74,16 @@ class Kumoa:
     def suorita(self):
         pass
 
+    def kumoa(self):
+        pass
+
 
 class Kayttoliittyma:
     def __init__(self, sovelluslogiikka, root):
         self._sovelluslogiikka = sovelluslogiikka
         self._root = root
         self._komennot = {}
+        self._edellinen_komento = None
 
     def kaynnista(self):
         self._arvo_var = StringVar()
@@ -109,9 +137,19 @@ class Kayttoliittyma:
 
     def _suorita_komento(self, komento):
         komento_olio = self._komennot[komento]
-        komento_olio.suorita()
 
-        self._kumoa_painike["state"] = constants.NORMAL
+        if komento == Komento.KUMOA:
+            if self._edellinen_komento is not None:
+                self._edellinen_komento.kumoa()
+                self._edellinen_komento = None
+        else:
+            komento_olio.suorita()
+            self._edellinen_komento = komento_olio
+
+        if self._edellinen_komento is None:
+            self._kumoa_painike["state"] = constants.DISABLED
+        else:
+            self._kumoa_painike["state"] = constants.NORMAL
 
         if self._sovelluslogiikka.arvo() == 0:
             self._nollaus_painike["state"] = constants.DISABLED
